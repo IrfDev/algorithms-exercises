@@ -14,12 +14,35 @@
 */
 
 function insertionSort(nums) {
-  // code goes here
+  if (Array.isArray(nums)) {
+    for (let index = 1; index < nums.length; index++) {
+      const currentElement = nums[index];
+
+      var checkedIndex = index + 0;
+      do {
+        const previousElement = nums[checkedIndex];
+
+        if (previousElement > currentElement) {
+          nums[checkedIndex + 1] = previousElement;
+        }
+
+        checkedIndex--;
+      } while (checkedIndex >= 0 && nums[checkedIndex] > currentElement);
+
+      nums[checkedIndex + 1] = currentElement;
+    }
+
+    console.log("nums", nums);
+
+    return nums;
+  }
+
+  throw TypeError(`The argument needs to be an array`);
 }
 
 // unit tests
 // do not modify the below code
-test.skip("insertion sort", function () {
+test("insertion sort", function () {
   const nums = [10, 5, 3, 8, 2, 6, 4, 7, 9, 1];
   insertionSort(nums);
   expect(nums).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
