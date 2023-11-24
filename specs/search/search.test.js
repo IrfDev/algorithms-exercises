@@ -7,7 +7,7 @@ function linearSearch(id, array) {
   let findedIndex = undefined;
   var currentIndex = 0;
 
-  while (currentIndex < array.length - 1 || typeof findedIndex === "number") {
+  while (currentIndex < array.length - 1 && typeof findedIndex !== "number") {
     let currentElement = array[currentIndex];
 
     if (currentElement.id === id) {
@@ -23,11 +23,13 @@ function linearSearch(id, array) {
 function binarySearch(id, array) {
   var minLimit = 0;
   var maxLimit = array.length - 1;
+
   var findedIndex = null;
 
   while (typeof findedIndex !== "number") {
     var currentMiddleIndex = Math.floor(minLimit + maxLimit / 2);
-    var currentMiddleElement = array[currentMiddleIndex];
+
+    var currentMiddleElement = array[currentMiddleIndex].id;
 
     if (currentMiddleElement === id) {
       findedIndex = currentMiddleIndex;
