@@ -26,12 +26,64 @@
 const { getUser } = require("./jobs");
 
 const findMostCommonTitle = (myId, degreesOfSeparation) => {
-  // code goes here
+  /*
+    Algo:
+      1. Iterate on degrees until you hit max degree separation
+      2. For each iteration you'll iterate over the queue
+      4. Add connections to the queue
+      3. Add title to the list of titles for the current user
+      4. When the queue finished
+      4. You'll add the new connections to the queue 
+      5. And add one degree of separation
+  */
+  let queue = [myId];
+  let currentDegreeOfSeparation = 0;
+  let titles = {};
+  let usersReviewed = [];
+
+  while (currentDegreeOfSeparation <= degreesOfSeparation) {
+    const newUserQueue = [];
+
+    while (queue.length) {
+      let currentUserId = queue.shift();
+      let currentUser = getUser(currentUserId);
+
+      for (let index = 0; index < currentUser.connections.length; index++) {
+        const element = currentUser.connections[index];
+
+        if (!usersReviewed.includes(element)) {
+          newUserQueue.push(element);
+          usersReviewed.push(element);
+        }
+      }
+
+      titles[currentUser.title] = titles[currentUser.title]
+        ? titles[currentUser.title] + 1
+        : 1;
+    }
+    queue = newUserQueue;
+    currentDegreeOfSeparation++;
+  }
+
+  var maximumCount = 0;
+  var mostCommonTitle = null;
+
+  for (const jobTitle in titles) {
+    if (Object.hasOwnProperty.call(titles, jobTitle)) {
+      const element = titles[jobTitle];
+      if (maximumCount < element) {
+        maximumCount = element;
+        mostCommonTitle = jobTitle;
+      }
+    }
+  }
+
+  return mostCommonTitle;
 };
 
 // unit tests
 // do not modify the below code
-test.skip("findMostCommonTitle", function () {
+describe("findMostCommonTitle", function () {
   // the getUser function and data comes from this CodePen: https://codepen.io/btholt/pen/NXJGwa?editors=0010
   test("user 30 with 2 degrees of separation", () => {
     expect(findMostCommonTitle(30, 2)).toBe("Librarian");
