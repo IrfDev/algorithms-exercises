@@ -32,7 +32,6 @@ class Tree {
   addNode(currentNode, newNode) {
     if (newNode.value < currentNode.value) {
       if (!currentNode.left) {
-        console.log("ADDING LEFT", currentNode.value, newNode.value);
         currentNode.left = newNode;
         return;
       }
@@ -40,7 +39,6 @@ class Tree {
       this.addNode(currentNode.left, newNode);
     } else {
       if (!currentNode.right) {
-        console.log("ADDING right", currentNode.value, newNode.value);
         currentNode.right = newNode;
         return;
       }
@@ -61,6 +59,7 @@ class Node {
 
   constructor(value) {
     this.value = value;
+    return;
   }
 }
 
