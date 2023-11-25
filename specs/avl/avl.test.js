@@ -22,16 +22,143 @@
 */
 
 class Tree {
-  // code goes here
+  root = null;
+
+  add(newNodeValue) {
+    let newNode = new TreeNode(newNodeValue);
+    if (!this.root) {
+      this.root = newNode;
+      return;
+    }
+
+    this.root.add(this.root, newNode);
+  }
+
+  toObject() {
+    return this.root;
+  }
 }
 
-class Node {
-  // code also goes here
+class TreeNode {
+  left = null;
+  right = null;
+  height = 1;
+  value = null;
+
+  constructor(value) {
+    this.value = value;
+  }
+
+  get leftHeight() {
+    return this.left ? this.left.leftHeight + this.height : 0;
+  }
+
+  get rightHeight() {
+    return this.right ? this.right.rightHeight + this.height : 0;
+  }
+
+  get balanceFactor() {
+    return this.leftHeight - this.rightHeight;
+  }
+
+  get needRotate() {
+    return this.balanceFactor < 1 || this.balanceFactor < -1;
+  }
+
+  add(currentNode, newNode) {
+    if (newNode.value < currentNode.value) {
+      if (!currentNode.left) {
+        currentNode.left = newNode;
+      } else {
+        this.add(currentNode.left, newNode);
+      }
+    } else {
+      if (!currentNode.right) {
+        currentNode.right = newNode;
+      } else {
+        this.add(currentNode.right, newNode);
+      }
+    }
+
+    this.balance();
+  }
+
+  balance() {
+    if (!this.needRotate) return;
+
+    if (this.leftHeight > this.rightHeight) {
+      this.rotateLL();
+    } else {
+      this.rotateRR();
+    }
+  }
+
+  // If the right child is heavy
+  rotateRR() {
+    // Swap values with right
+    let originalClone = new TreeNode(this.value);
+    let rightNode = this.right;
+    let leftNode = this.left;
+
+    originalClone.right = this.right;
+    originalClone.left = this.left;
+
+    this.value = rightNode.value;
+    this.right.value = originalClone.value;
+
+    this.left = this.right;
+
+    // Make new left.right||left.left (depending on balance factor) the right value of current node right = right.rigth||right.left
+
+    if (this.left.leftHeight > this.left.rightHeight) {
+      this.right = this.left.right;
+    } else {
+      this.right = this.left.left;
+    }
+
+    // Make left.right = left.left
+
+    this.left.right = this.left.left;
+
+    // Make original.left = left.left
+    this.left.left = originalClone.left;
+  }
+
+  // If the left child is heavy
+  rotateLL() {
+    // Swap values with right
+    let originalClone = new TreeNode(this.value);
+    let rightNode = this.right;
+    let leftNode = this.left;
+
+    originalClone.right = this.right;
+    originalClone.left = this.left;
+
+    this.value = leftNode.value;
+    this.left.value = originalClone.value;
+
+    this.right = this.left;
+
+    // Make new left.right||left.left (depending on balance factor) the right value of current node right = right.rigth||right.left
+
+    if (this.right.leftHeight > this.right.rightHeight) {
+      this.left = this.right.right;
+    } else {
+      this.left = this.right.left;
+    }
+
+    // Make left.right = left.left
+
+    this.right.right = this.right.left;
+
+    // Make original.left = left.left
+    this.right.left = originalClone.left;
+  }
 }
 
 // unit tests
 // do not modify the below code
-describe.skip("AVL Tree", function () {
+describe("AVL Tree", function () {
   test("creates a correct tree", () => {
     const nums = [3, 7, 4, 6, 5, 1, 10, 2, 9, 8];
     const tree = new Tree();
