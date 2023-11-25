@@ -16,8 +16,69 @@ class Node {
   // you don't have to use this data structure, this is just how I did it
   // you'll almost definitely need more methods than this and a constructor
   // and instance variables
+
+  children = [];
+  // This means that is the end of the string
+
+  terminus = false;
+  value = null;
+
+  constructor(stringValue) {
+    this.value = stringValue[0];
+    if (stringValue.length > 1) {
+      this.children.push(new Node(stringValue.substr(1)));
+    } else {
+      this.terminus = true;
+    }
+  }
+
+  add(stringValue) {
+    const value = stringValue[0];
+    const nextValue = stringValue.substr(1);
+
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+
+      if (element.value === value) {
+        if (nextValue) {
+          element.add(nextValue);
+        } else {
+          element.terminus = true;
+        }
+        return;
+      }
+    }
+
+    this.children.push(new Node(stringValue));
+  }
+
+  _complete(search, built, suggestions) {
+    if (suggestions.length >= 3 || (search && search[0] !== this.value)) {
+      return suggestions;
+    }
+
+    if (this.terminus) {
+      suggestions.push(`${built}${this.value}`);
+    }
+
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+      element._complete(search.substr(1), `${built}${this.value}`, suggestions);
+    }
+
+    return suggestions;
+  }
+
   complete(string) {
-    return [];
+    let completion = [];
+
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+
+      completion = completion.concat(element._complete(string, "", []));
+    }
+
+    return completion;
   }
 }
 
@@ -25,14 +86,18 @@ const createTrie = (words) => {
   // you do not have to do it this way; this is just how I did it
   const root = new Node("");
 
-  // more code should go here
+  for (let index = 0; index < words.length; index++) {
+    const word = words[index];
+
+    root.add(word.toLowerCase());
+  }
 
   return root;
 };
 
 // unit tests
 // do not modify the below code
-describe.skip("tries", function () {
+describe("tries", function () {
   test("dataset of 10 – san", () => {
     const root = createTrie(CITY_NAMES.slice(0, 10));
     const completions = root.complete("san");
@@ -69,7 +134,7 @@ describe.skip("tries", function () {
         "new orleans",
         "new haven",
         "newark",
-        "newport news"
+        "newport news",
       ]).length
     ).toBe(3);
   });
@@ -127,13 +192,13 @@ describe.skip("tries", function () {
         "santee",
         "sandy",
         "sandy springs",
-        "sanford"
+        "sanford",
       ]).length
     ).toBe(3);
   });
 });
 
-describe.skip("edge cases", () => {
+describe("edge cases", () => {
   test("handle whole words – seattle", () => {
     const root = createTrie(CITY_NAMES.slice(0, 30));
     const completions = root.complete("seattle");
