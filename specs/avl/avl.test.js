@@ -26,16 +26,20 @@ class Tree {
 
   add(newNodeValue) {
     let newNode = new TreeNode(newNodeValue);
-    if (!this.root) {
+
+    if (this.root === null) {
       this.root = newNode;
       return;
     }
 
-    this.root.add(this.root, newNode);
+    this.root.add(newNodeValue);
   }
 
+  toJSON() {
+    return JSON.stringify(this.root.serialize(), null, 4);
+  }
   toObject() {
-    return this.root;
+    return this.root.serialize();
   }
 }
 
@@ -50,11 +54,11 @@ class TreeNode {
   }
 
   get leftHeight() {
-    return this.left ? this.left.leftHeight + this.height : 0;
+    return (this.left ? this.left.leftHeight : 0) + this.height;
   }
 
   get rightHeight() {
-    return this.right ? this.right.rightHeight + this.height : 0;
+    return (this.right ? this.right.rightHeight : 0) + this.height;
   }
 
   get balanceFactor() {
@@ -62,97 +66,109 @@ class TreeNode {
   }
 
   get needRotate() {
-    return this.balanceFactor < 1 || this.balanceFactor < -1;
+    return this.balanceFactor > 1 || this.balanceFactor < -1;
   }
 
-  add(currentNode, newNode) {
-    if (newNode.value < currentNode.value) {
-      if (!currentNode.left) {
-        currentNode.left = newNode;
+  add(value) {
+    if (value < this.value) {
+      // go left
+
+      if (this.left) {
+        this.left.add(value);
       } else {
-        this.add(currentNode.left, newNode);
+        this.left = new TreeNode(value);
+      }
+      if (!this.right || this.right.height < this.left.height) {
+        this.height = this.left.height + 1;
       }
     } else {
-      if (!currentNode.right) {
-        currentNode.right = newNode;
+      // go right
+
+      if (this.right) {
+        this.right.add(value);
       } else {
-        this.add(currentNode.right, newNode);
+        this.right = new TreeNode(value);
+      }
+      if (!this.left || this.right.height > this.left.height) {
+        this.height = this.right.height + 1;
       }
     }
-
     this.balance();
   }
 
   balance() {
-    if (!this.needRotate) return;
+    const rightHeight = this.right ? this.right.height : 0;
+    const leftHeight = this.left ? this.left.height : 0;
 
-    if (this.leftHeight > this.rightHeight) {
+    if (leftHeight > rightHeight + 1) {
+      const leftRightHeight = this.left.right ? this.left.right.height : 0;
+      const leftLeftHeight = this.left.left ? this.left.left.height : 0;
+
+      if (leftRightHeight > leftLeftHeight) {
+        this.left.rotateRR();
+      }
+
       this.rotateLL();
-    } else {
+    } else if (rightHeight > leftHeight + 1) {
+      const rightRightHeight = this.right.right ? this.right.right.height : 0;
+      const rightLeftHeight = this.right.left ? this.right.left.height : 0;
+
+      if (rightLeftHeight > rightRightHeight) {
+        this.right.rotateLL();
+      }
+
       this.rotateRR();
     }
   }
 
   // If the right child is heavy
   rotateRR() {
-    // Swap values with right
-    let originalClone = new TreeNode(this.value);
-    let rightNode = this.right;
-    let leftNode = this.left;
-
-    originalClone.right = this.right;
-    originalClone.left = this.left;
-
-    this.value = rightNode.value;
-    this.right.value = originalClone.value;
-
+    const valueBefore = this.value;
+    const leftBefore = this.left;
+    this.value = this.right.value;
     this.left = this.right;
-
-    // Make new left.right||left.left (depending on balance factor) the right value of current node right = right.rigth||right.left
-
-    if (this.left.leftHeight > this.left.rightHeight) {
-      this.right = this.left.right;
-    } else {
-      this.right = this.left.left;
-    }
-
-    // Make left.right = left.left
-
+    this.right = this.right.right;
     this.left.right = this.left.left;
-
-    // Make original.left = left.left
-    this.left.left = originalClone.left;
+    this.left.left = leftBefore;
+    this.left.value = valueBefore;
+    this.left.updateInNewLocation();
+    this.updateInNewLocation();
   }
 
   // If the left child is heavy
   rotateLL() {
-    // Swap values with right
-    let originalClone = new TreeNode(this.value);
-    let rightNode = this.right;
-    let leftNode = this.left;
-
-    originalClone.right = this.right;
-    originalClone.left = this.left;
-
-    this.value = leftNode.value;
-    this.left.value = originalClone.value;
-
+    const valueBefore = this.value;
+    const rightBefore = this.right;
+    this.value = this.left.value;
     this.right = this.left;
+    this.left = this.left.left;
+    this.right.left = this.right.right;
+    this.right.right = rightBefore;
+    this.right.value = valueBefore;
+    this.right.updateInNewLocation();
+    this.updateInNewLocation();
+  }
 
-    // Make new left.right||left.left (depending on balance factor) the right value of current node right = right.rigth||right.left
-
-    if (this.right.leftHeight > this.right.rightHeight) {
-      this.left = this.right.right;
+  updateInNewLocation() {
+    if (!this.right && !this.left) {
+      this.height = 1;
+    } else if (
+      !this.right ||
+      (this.left && this.right.height < this.left.height)
+    ) {
+      this.height = this.left.height + 1;
     } else {
-      this.left = this.right.left;
+      //if (!this.left || this.right.height > this.left.height)
+      this.height = this.right.height + 1;
     }
+  }
 
-    // Make left.right = left.left
-
-    this.right.right = this.right.left;
-
-    // Make original.left = left.left
-    this.right.left = originalClone.left;
+  serialize() {
+    const ans = { value: this.value };
+    ans.left = this.left === null ? null : this.left.serialize();
+    ans.right = this.right === null ? null : this.right.serialize();
+    ans.height = this.height;
+    return ans;
   }
 }
 
