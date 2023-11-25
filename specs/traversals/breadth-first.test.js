@@ -1,19 +1,37 @@
+// const breadthFirstTraverse = (queue, array) => {
+//   while (queue.length) {
+//     // Process current
+//     let elementToProcess = queue.shift();
+
+//     array.push(elementToProcess.value);
+
+//     if (elementToProcess.left) {
+//       queue.push(elementToProcess.left);
+//     }
+//     if (elementToProcess.right) {
+//       queue.push(elementToProcess.right);
+//     }
+//   }
+
+//   return array;
+// };
+
 const breadthFirstTraverse = (queue, array) => {
-  while (queue.length) {
-    // Process current
-    let elementToProcess = queue.shift();
+  if (!queue.length) return array;
 
-    array.push(elementToProcess.value);
+  // Process current
+  let elementToProcess = queue.shift();
 
-    if (elementToProcess.left) {
-      queue.push(elementToProcess.left);
-    }
-    if (elementToProcess.right) {
-      queue.push(elementToProcess.right);
-    }
+  array.push(elementToProcess.value);
+
+  if (elementToProcess.left) {
+    queue.push(elementToProcess.left);
+  }
+  if (elementToProcess.right) {
+    queue.push(elementToProcess.right);
   }
 
-  return array;
+  return breadthFirstTraverse(queue, array);
 };
 
 // unit tests
